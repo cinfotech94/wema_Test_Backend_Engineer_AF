@@ -10,10 +10,11 @@ namespace wema_Test_Backend_Engineer_Afeez.Services.Interface
 {
     public interface IWemaTestMain
     {
-        Task<string> SendOtp(string otp, string number, string controler);
+        Task<string> SendOtp( string number, string controler);
         Task<IEnumerable<CustomerResponse>> GetOnboardCustomer(string controler);
         //CustomerResponse GetOnboardCustomer(int id, string controler);
         Task<List<BankResponse>> GetexistingBank(string controler);
         Task<IEnumerable<LogEntryResponse>> GetLogs(LogStatus type, string controler);
+        Task<string> OnboardNewCustomer(CustomerRequest customerRequest, string controller);
     }
 }

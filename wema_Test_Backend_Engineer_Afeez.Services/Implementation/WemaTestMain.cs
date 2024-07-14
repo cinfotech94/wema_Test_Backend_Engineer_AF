@@ -36,7 +36,7 @@ namespace wema_Test_Backend_Engineer_Afeez.Services.Implementation
             {
                 id = Guid.NewGuid(),
                 dateTime = DateTime.Now,
-                type = "inbound",
+                type = "ountbound",
                 method = "GetexistingBank",
                 controller = controler,
             };
@@ -80,7 +80,85 @@ namespace wema_Test_Backend_Engineer_Afeez.Services.Implementation
             _logService.AddLog(logEntryRequest);
             return response;
         }
-
+        public async Task<string> OnboardNewCustomer(CustomerRequest customerRequest, string controller)
+        {
+            var logEntryRequest = new LogEntryRequest()
+            {
+                id = Guid.NewGuid(),
+                dateTime = DateTime.Now,
+                type = "inbound",
+                method = "OnboardCustomer",
+                controller = controller,
+            };
+            var response = "";
+            try
+            {
+                string verifyExistence = await _cacheService.GetAsync<string>(customerRequest.phoneNumber + "OTP");
+                if (verifyExistence != null)
+                {
+                    if (customerRequest.OTP.Equals(verifyExistence))
+                    {
+                        bool verifyLGA = ConfirmLGA(customerRequest.residentialState, customerRequest.LGA);
+                        if(verifyLGA)
+                        {
+                            var customer = new Customer()
+                            {
+                                phoneNumber = customerRequest.phoneNumber,
+                                email = customerRequest.email,
+                                password = customerRequest.password,
+                                residentialState = customerRequest.residentialState,
+                                LGA = customerRequest.LGA,
+                            };
+                            int repoResponse = await _CustomerRepo.AddAsync<Customer>(customer);
+                            if (repoResponse == 0)
+                            {
+                                logEntryRequest.action = "account onboarding is not succesful";
+                                logEntryRequest.details = $"return {customerRequest.phoneNumber} and {customerRequest.email} has not been use to create account succesfully";
+                                logEntryRequest.status = LogStatus.Error;
+                                response = "account onboarding is not succesful";
+                            }
+                            else
+                            {
+                                logEntryRequest.action = "account onboarding is succesful";
+                                logEntryRequest.details = $"return {customerRequest.phoneNumber} and {customerRequest.email} has been use to create account succesfully";
+                                logEntryRequest.status = LogStatus.Success;
+                                response = "onboarding of account is succesful";
+                            }
+                        }
+                        else
+                        {
+                            logEntryRequest.action = "Check your state and local government very well";
+                            logEntryRequest.details = $"return {customerRequest.residentialState} and {customerRequest.LGA} his wronged";
+                            logEntryRequest.status = LogStatus.Error;
+                            response = "Check your state and local government very well";
+                        }
+                       
+                    }
+                    else
+                    {
+                        logEntryRequest.action = "CHeck yor Otp or phone number well one of it is not correct";
+                        logEntryRequest.details = $"return {customerRequest.phoneNumber} and {customerRequest.email} wrong OTP or Phone NUmber is used";
+                        logEntryRequest.status = LogStatus.Danger;
+                        response = "CHeck your Otp or phone number well one of it is not correct";
+                    }
+                }
+                else
+                {
+                    logEntryRequest.action = "Either you have not request for password or it has passed 5 miniutes";
+                    logEntryRequest.details = $"return {customerRequest.phoneNumber} and {customerRequest.email} have not request for otp and is trying to create account";
+                    logEntryRequest.status = LogStatus.Warning;
+                    response = "Either you have not request for password or it has passed 5 miniutes";
+                }
+            }
+            catch (Exception ex)
+            {
+                logEntryRequest.action = ex.Source;
+                logEntryRequest.details = ex.Message + ex.InnerException;
+                logEntryRequest.status = LogStatus.Exception;
+            }
+            _logService.AddLog(logEntryRequest);
+            return response;
+        }
         public async Task<IEnumerable<CustomerResponse>> GetOnboardCustomer(string controler)
         {
             var logEntryRequest = new LogEntryRequest()
@@ -175,7 +253,7 @@ namespace wema_Test_Backend_Engineer_Afeez.Services.Implementation
             return response;
         }
     
-        public async Task<string> SendOtp(string otp,string number, string controler)
+        public async Task<string> SendOtp(string number, string controler)
         {
             var logEntryRequest = new LogEntryRequest()
             {

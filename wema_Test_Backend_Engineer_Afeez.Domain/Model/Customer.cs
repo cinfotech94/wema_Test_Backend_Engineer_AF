@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace wema_Test_Backend_Engineer_Afeez.Domain.Model
 {
@@ -19,3 +20,4 @@ namespace wema_Test_Backend_Engineer_Afeez.Domain.Model
         public string LGA {  get; set; }
     }
 }
+//C:\test\latest\wema_Test_Backend_Engineer_Afeez.API\wema_Test_Backend_Engineer_Afeez.API>dotnet ef database update --project ../wema_Test_Backend_Engineer_Afeez.Data --startup-project .
