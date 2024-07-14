@@ -14,7 +14,7 @@ namespace wema_Test_Backend_Engineer_Afeez.Services
         public static void AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
             // Configure Redis
-            var redisConnectionString = configuration.GetSection("Redis:ConnectionString").Value;
+            var redisConnectionString = configuration.GetConnectionString("RedisConnection");
             services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
 
             // Configure Serilog

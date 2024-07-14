@@ -1,52 +1,32 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using StackExchange.Redis;
-using System;
 using System.IO;
 using wema_Test_Backend_Engineer_Afeez.Data;
-using wema_Test_Backend_Engineer_Afeez.Data.Repository;
-using wema_Test_Backend_Engineer_Afeez.Services.Implementation;
-using wema_Test_Backend_Engineer_Afeez.Services.Interface;
+using wema_Test_Backend_Engineer_Afeez.Services;
 
-public class Program
-{
-    public static void Main(string[] args)
-    {
         var builder = WebApplication.CreateBuilder(args);
 
         // Configuration setup
         var configuration = builder.Configuration;
 
         // Register DbContext with the SQL Server provider
-
         builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
-        // Register Repo<TEntity> for each TEntity you have in your application
-        
-        builder.Services.AddScoped<IRepo, Repo>();
-        builder.Services.AddScoped<AppDbContext>();
-        // Configure Redis
-        var redisConnectionString = configuration.GetSection("Redis:ConnectionString").Value;
-        builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-        // Configure Serilog
-        Log.Logger = new LoggerConfiguration()
-            .ReadFrom.Configuration(configuration)
-            .Enrich.FromLogContext()
-            .WriteTo.Console()
-            .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
-            .CreateLogger();
+        // Ensure the logs directory exists
+        if (!Directory.Exists("logs"))
+        {
+            Directory.CreateDirectory("logs");
+        }
 
-        builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog());
+        // Add data services (repository)
+        builder.Services.AddDataServices(configuration);
 
-        // Register other services
-        builder.Services.AddScoped<ICacheService, CacheService>();
-        builder.Services.AddScoped<ILogService, LogService>();
-        builder.Services.AddScoped<IWemaTestMain, WemaTestMain>();
+        // Add additional application services as needed
+        builder.Services.AddApplicationServices(configuration);
 
         // Add controllers
         builder.Services.AddControllers();
@@ -71,5 +51,3 @@ public class Program
         app.MapControllers();
 
         app.Run();
-    }
-}

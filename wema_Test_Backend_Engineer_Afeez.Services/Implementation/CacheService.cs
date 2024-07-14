@@ -14,7 +14,7 @@ namespace wema_Test_Backend_Engineer_Afeez.Services.Implementation
         public CacheService(IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString("RedisConnection");
-            _redis = ConnectionMultiplexer.Connect(connectionString + ",abortConnect=false");
+            _redis = ConnectionMultiplexer.Connect(connectionString);
             _database = _redis.GetDatabase();
         }
 

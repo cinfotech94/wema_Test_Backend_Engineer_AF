@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.34928.147
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wema_Test_Backend_Engineer_Afeez.API", "wema_Test_Backend_Engineer_Afeez.API\wema_Test_Backend_Engineer_Afeez.API.csproj", "{6325A600-1B56-48B3-ADAD-046B7D7A0805}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "wema_Test_Backend_Engineer_Afeez.API", "wema_Test_Backend_Engineer_Afeez.API\wema_Test_Backend_Engineer_Afeez.API.csproj", "{6325A600-1B56-48B3-ADAD-046B7D7A0805}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wema_Test_Backend_Engineer_Afeez.Data", "wema_Test_Backend_Engineer_Afeez.Data\wema_Test_Backend_Engineer_Afeez.Data.csproj", "{17ED0A70-1439-44AB-ADFA-1B8D175BBC02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "wema_Test_Backend_Engineer_Afeez.Data", "wema_Test_Backend_Engineer_Afeez.Data\wema_Test_Backend_Engineer_Afeez.Data.csproj", "{17ED0A70-1439-44AB-ADFA-1B8D175BBC02}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wema_Test_Backend_Engineer_Afeez.Domain", "wema_Test_Backend_Engineer_Afeez.Domain\wema_Test_Backend_Engineer_Afeez.Domain.csproj", "{399D006A-2DC6-4D9C-8594-CD0215C557DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "wema_Test_Backend_Engineer_Afeez.Domain", "wema_Test_Backend_Engineer_Afeez.Domain\wema_Test_Backend_Engineer_Afeez.Domain.csproj", "{399D006A-2DC6-4D9C-8594-CD0215C557DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wema_Test_Backend_Engineer_Afeez.Services", "wema_Test_Backend_Engineer_Afeez.Services\wema_Test_Backend_Engineer_Afeez.Services.csproj", "{3887D292-2FC1-473A-9972-55F96981978B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "wema_Test_Backend_Engineer_Afeez.Services", "wema_Test_Backend_Engineer_Afeez.Services\wema_Test_Backend_Engineer_Afeez.Services.csproj", "{3887D292-2FC1-473A-9972-55F96981978B}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{B8079405-3D77-4006-8E7D-15211C3EC3F3}"
 EndProject

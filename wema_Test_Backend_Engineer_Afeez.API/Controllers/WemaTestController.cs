@@ -1,53 +1,55 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using wema_Test_Backend_Engineer_Afeez.Domain.DTO;
 using wema_Test_Backend_Engineer_Afeez.Domain.Enums;
 using wema_Test_Backend_Engineer_Afeez.Services.Interface;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace wema_Test_Backend_Engineer_Afeez.API.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class WemaTestController : ControllerBase
-
     {
-        private readonly IWemaTestMain _wematestMain;
+        private readonly IWemaTestMain _wemaTestMain;
 
-        public WemaTestController(IWemaTestMain wematestMain)
+        public WemaTestController(IWemaTestMain wemaTestMain)
         {
-            _wematestMain = wematestMain;
+            _wemaTestMain = wemaTestMain;
         }
 
-
-        [HttpPost(Name = "sendOtp")]
-        public async Task<IActionResult> sendOtp(string phoneNo)
+        [HttpPost("sendOtp")]
+        public async Task<IActionResult> SendOtp(string phoneNo)
         {
-            string otpResponses = await _wematestMain.SendOtp(phoneNo, "WemaTestController");
-            return Ok(otpResponses);
+            string otpResponse = await _wemaTestMain.SendOtp(phoneNo, nameof(WemaTestController));
+            return Ok(otpResponse);
         }
 
-        [HttpPost(Name = "OnboardCustomer")]
-        public async Task<IActionResult> OnboardCustomer(CustomerRequest customerRequest)
+        [HttpPost("onboardCustomer")]
+        public async Task<IActionResult> OnboardCustomer([FromBody] CustomerRequest customerRequest)
         {
-            string onboardResponses = await _wematestMain.OnboardNewCustomer(customerRequest, "WemaTestController");
-            return Ok(onboardResponses);
+            string onboardResponse = await _wemaTestMain.OnboardNewCustomer(customerRequest, nameof(WemaTestController));
+            return Ok(onboardResponse);
         }
-        [HttpGet(Name = "GettAllOnboardCustomer")]
-        public async Task<IActionResult> GettAllOnboardCustomer()
+
+        [HttpGet("getAllOnboardCustomers")]
+        public async Task<IActionResult> GetAllOnboardCustomers()
         {
-            IEnumerable<CustomerResponse> customerResponses = await _wematestMain.GetOnboardCustomer("WemaTestController");
+            IEnumerable<CustomerResponse> customerResponses = await _wemaTestMain.GetOnboardCustomer(nameof(WemaTestController));
             return Ok(customerResponses);
         }
-        [HttpGet(Name = "GettAllExistingBank")]
-        public async Task<IActionResult> GettAllExistingBank()
+
+        [HttpGet("getAllExistingBanks")]
+        public async Task<IActionResult> GetAllExistingBanks()
         {
-            IEnumerable<BankResponse> customerResponses = await _wematestMain.GetexistingBank("WemaTestController");
-            return Ok(customerResponses);
+            IEnumerable<BankResponse> bankResponses = await _wemaTestMain.GetexistingBank(nameof(WemaTestController));
+            return Ok(bankResponses);
         }
-        [HttpGet(Name = "GettAllExistingBank")]
-        public async Task<IActionResult> GettAlllog(LogStatus logSTatus)
+
+        [HttpGet("getAllLogs")]
+        public async Task<IActionResult> GetAllLogs(LogStatus logStatus)
         {
-            IEnumerable<LogEntryResponse> logResponses = await _wematestMain.GetLogs(logSTatus,"WemaTestController");
+            IEnumerable<LogEntryResponse> logResponses = await _wemaTestMain.GetLogs(logStatus, nameof(WemaTestController));
             return Ok(logResponses);
         }
     }

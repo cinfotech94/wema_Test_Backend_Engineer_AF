@@ -9,9 +9,9 @@ namespace wema_Test_Backend_Engineer_Afeez.Data.Repository
 {
     public class Repo : IRepo
     {
-        private readonly DbContext _context;
+        private readonly AppDbContext _context;
 
-        public Repo(DbContext dbContext)
+        public Repo(AppDbContext dbContext)
         {
             _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
