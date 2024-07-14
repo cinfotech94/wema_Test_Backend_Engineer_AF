@@ -17,11 +17,10 @@ namespace wema_Test_Backend_Engineer_Afeez.Data
                 .Build();
 
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            var connectionString = configuration.GetSection("Sql:ConnectionString").Value;
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
 
             optionsBuilder.UseSqlServer(connectionString);
-            using var context = new AppDbContext(optionsBuilder.Options);
-            context.Database.Migrate();
+
             return new AppDbContext(optionsBuilder.Options);
         }
     }

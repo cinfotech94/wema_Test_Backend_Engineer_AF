@@ -9,7 +9,7 @@ namespace wema_Test_Backend_Engineer_Afeez.Data
     {
         public static void AddDataServices(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = configuration.GetSection("Sql:ConnectionString").Value;
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
