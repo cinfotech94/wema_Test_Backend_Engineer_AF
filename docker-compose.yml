@@ -1,0 +1,40 @@
+version: '3.4'
+
+services:
+  wema_test_backend_engineer_afeez.api:
+    image: ${DOCKER_REGISTRY-}wematestbackendengineerafeezapi
+    build:
+      context: .
+      dockerfile: wema_Test_Backend_Engineer_Afeez.API/Dockerfile # Adjust if your Dockerfile is in a different directory
+    ports:
+      - "8080:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=dbserver;Database=mydatabase;User Id=sa;Password=AfeezDev_123;"
+      REDIS_CONNECTIONSTRING: "redisserver:6379"
+    depends_on:
+      - dbserver
+      - redisserver
+    networks:
+      - my-network
+
+  dbserver:
+    image: mcr.microsoft.com/mssql/server:latest
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "AfeezDev_123"
+      ACCEPT_EULA: "Y"
+    networks:
+      - my-network
+
+  redisserver:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
