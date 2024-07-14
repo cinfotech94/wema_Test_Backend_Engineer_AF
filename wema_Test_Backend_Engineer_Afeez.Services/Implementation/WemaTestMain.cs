@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using wema_Test_Backend_Engineer_Afeez.Data.Repository;
 using wema_Test_Backend_Engineer_Afeez.Domain.DTO;
@@ -54,15 +55,16 @@ namespace wema_Test_Backend_Engineer_Afeez.Services.Implementation
                 else
                 {
                     string point = "https://wema-alatdev-apimgt.azure-api.net/alat-test/api/Shared/GetAllBanks";
-                    string httpRespnse = await GenericService.SendRequestAsync(point, HttpMethod.Get);
+                    string httpRespnse = await GenericService.SendGetRequestAsync(point);
                     if (httpRespnse == null)
                     {
                         logEntryRequest.action = "CBank Not Found";
                         logEntryRequest.details = $"the http response from {point} is null";
                         logEntryRequest.status = LogStatus.Error;
                         response = new List<BankResponse>();
+                        return response;
                     }
-                    BanksRoot banksRoot = GenericService.Deserialize<BanksRoot>(httpRespnse);
+                    BanksRoot banksRoot = await GenericService.Deserialize<BanksRoot>(httpRespnse);
                     logEntryRequest.action = "Banks found";
                     logEntryRequest.details = $"return {banksRoot.result.Count()} number of banks";
                     logEntryRequest.status = LogStatus.Success;
@@ -98,7 +100,7 @@ namespace wema_Test_Backend_Engineer_Afeez.Services.Implementation
                 {
                     if (customerRequest.OTP.Equals(verifyExistence))
                     {
-                        bool verifyLGA = ConfirmLGA(customerRequest.residentialState, customerRequest.LGA);
+                        bool verifyLGA = await ConfirmLGA(customerRequest.residentialState, customerRequest.LGA);
                         if(verifyLGA)
                         {
                             var customer = new Customer()
@@ -295,7 +297,6 @@ namespace wema_Test_Backend_Engineer_Afeez.Services.Implementation
                         response = "please confirm the number";
                     }
                 }
-                return response;
             }
             catch (Exception ex)
             {
@@ -306,27 +307,898 @@ namespace wema_Test_Backend_Engineer_Afeez.Services.Implementation
             _logService.AddLog(logEntryRequest);
             return response;
         }
-        private bool ConfirmLGA(string state, string LGA)
+        private async Task< bool> ConfirmLGA(string state, string LGA)
         {
-            var response = false;
-            var statesSection = _configuration.GetSection("States");
-            StateRoot states = statesSection.Get<StateRoot>(); 
-            var checkState = states.States.FirstOrDefault(s => s.State == state);
-            if (checkState != null)
+            string json = @"{
+          ""States"": [
             {
-                if (checkState.LGAs.Contains(LGA))
+              ""State"": ""Abia"",
+              ""LGAs"": [
+                ""Aba North"",
+                ""Aba South"",
+                ""Arochukwu"",
+                ""Bende"",
+                ""Ikwuano"",
+                ""Isiala-Ngwa North"",
+                ""Isiala-Ngwa South"",
+                ""Isuikwato"",
+                ""Obi Nwa"",
+                ""Ohafia"",
+                ""Osisioma"",
+                ""Ngwa"",
+                ""Ugwunagbo"",
+                ""Ukwa East"",
+                ""Ukwa West"",
+                ""Umuahia North"",
+                ""Umuahia South"",
+                ""Umu-Neochi""
+              ]
+            },
+            {
+              ""State"": ""Adamawa"",
+              ""LGAs"": [
+                ""Demsa"",
+                ""Fufore"",
+                ""Ganaye"",
+                ""Gireri"",
+                ""Gombi"",
+                ""Guyuk"",
+                ""Hong"",
+                ""Jada"",
+                ""Lamurde"",
+                ""Madagali"",
+                ""Maiha"",
+                ""Mayo-Belwa"",
+                ""Michika"",
+                ""Mubi North"",
+                ""Mubi South"",
+                ""Numan"",
+                ""Shelleng"",
+                ""Song"",
+                ""Toungo"",
+                ""Yola North"",
+                ""Yola South""
+              ]
+            },
+            {
+              ""State"": ""Anambra"",
+              ""LGAs"": [
+                ""Aguata"",
+                ""Anambra East"",
+                ""Anambra West"",
+                ""Anaocha"",
+                ""Awka North"",
+                ""Awka South"",
+                ""Ayamelum"",
+                ""Dunukofia"",
+                ""Ekwusigo"",
+                ""Idemili North"",
+                ""Idemili south"",
+                ""Ihiala"",
+                ""Njikoka"",
+                ""Nnewi North"",
+                ""Nnewi South"",
+                ""Ogbaru"",
+                ""Onitsha North"",
+                ""Onitsha South"",
+                ""Orumba North"",
+                ""Orumba South"",
+                ""Oyi""
+              ]
+            },
+            {
+              ""State"": ""Akwa Ibom"",
+              ""LGAs"": [
+                ""Abak"",
+                ""Eastern Obolo"",
+                ""Eket"",
+                ""Esit Eket"",
+                ""Essien Udim"",
+                ""Etim Ekpo"",
+                ""Etinan"",
+                ""Ibeno"",
+                ""Ibesikpo Asutan"",
+                ""Ibiono Ibom"",
+                ""Ika"",
+                ""Ikono"",
+                ""Ikot Abasi"",
+                ""Ikot Ekpene"",
+                ""Ini"",
+                ""Itu"",
+                ""Mbo"",
+                ""Mkpat Enin"",
+                ""Nsit Atai"",
+                ""Nsit Ibom"",
+                ""Nsit Ubium"",
+                ""Obot Akara"",
+                ""Okobo"",
+                ""Onna"",
+                ""Oron"",
+                ""Oruk Anam"",
+                ""Udung Uko"",
+                ""Ukanafun"",
+                ""Uruan"",
+                ""Urue-Offong/Oruko "",
+                ""Uyo""
+              ]
+            },
+            {
+              ""State"": ""Bauchi"",
+              ""LGAs"": [
+                ""Alkaleri"",
+                ""Bauchi"",
+                ""Bogoro"",
+                ""Damban"",
+                ""Darazo"",
+                ""Dass"",
+                ""Ganjuwa"",
+                ""Giade"",
+                ""Itas/Gadau"",
+                ""Jama'are"",
+                ""Katagum"",
+                ""Kirfi"",
+                ""Misau"",
+                ""Ningi"",
+                ""Shira"",
+                ""Tafawa-Balewa"",
+                ""Toro"",
+                ""Warji"",
+                ""Zaki""
+              ]
+            },
+            {
+              ""State"": ""Bayelsa"",
+              ""LGAs"": [
+                ""Brass"",
+                ""Ekeremor"",
+                ""Kolokuma/Opokuma"",
+                ""Nembe"",
+                ""Ogbia"",
+                ""Sagbama"",
+                ""Southern Jaw"",
+                ""Yenegoa""
+              ]
+            },
+            {
+              ""State"": ""Benue"",
+              ""LGAs"": [
+                ""Ado"",
+                ""Agatu"",
+                ""Apa"",
+                ""Buruku"",
+                ""Gboko"",
+                ""Guma"",
+                ""Gwer East"",
+                ""Gwer West"",
+                ""Katsina-Ala"",
+                ""Konshisha"",
+                ""Kwande"",
+                ""Logo"",
+                ""Makurdi"",
+                ""Obi"",
+                ""Ogbadibo"",
+                ""Oju"",
+                ""Okpokwu"",
+                ""Ohimini"",
+                ""Oturkpo"",
+                ""Tarka"",
+                ""Ukum"",
+                ""Ushongo"",
+                ""Vandeikya""
+              ]
+            },
+            {
+              ""State"": ""Borno"",
+              ""LGAs"": [
+                ""Abadam"",
+                ""Askira/Uba"",
+                ""Bama"",
+                ""Bayo"",
+                ""Biu"",
+                ""Chibok"",
+                ""Damboa"",
+                ""Dikwa"",
+                ""Gubio"",
+                ""Guzamala"",
+                ""Gwoza"",
+                ""Hawul"",
+                ""Jere"",
+                ""Kaga"",
+                ""Kala/Balge"",
+                ""Konduga"",
+                ""Kukawa"",
+                ""Kwaya Kusar"",
+                ""Mafa"",
+                ""Magumeri"",
+                ""Maiduguri"",
+                ""Marte"",
+                ""Mobbar"",
+                ""Monguno"",
+                ""Ngala"",
+                ""Nganzai"",
+                ""Shani""
+              ]
+            },
+            {
+              ""State"": ""Cross River"",
+              ""LGAs"": [
+                ""Akpabuyo"",
+                ""Odukpani"",
+                ""Akamkpa"",
+                ""Biase"",
+                ""Abi"",
+                ""Ikom"",
+                ""Yarkur"",
+                ""Odubra"",
+                ""Boki"",
+                ""Ogoja"",
+                ""Yala"",
+                ""Obanliku"",
+                ""Obudu"",
+                ""Calabar South"",
+                ""Etung"",
+                ""Bekwara"",
+                ""Bakassi"",
+                ""Calabar Municipality""
+              ]
+            },
+            {
+              ""State"": ""Delta"",
+              ""LGAs"": [
+                ""Oshimili"",
+                ""Aniocha"",
+                ""Aniocha South"",
+                ""Ika South"",
+                ""Ika North-East"",
+                ""Ndokwa West"",
+                ""Ndokwa East"",
+                ""Isoko south"",
+                ""Isoko North"",
+                ""Bomadi"",
+                ""Burutu"",
+                ""Ughelli South"",
+                ""Ughelli North"",
+                ""Ethiope West"",
+                ""Ethiope East"",
+                ""Sapele"",
+                ""Okpe"",
+                ""Warri North"",
+                ""Warri South"",
+                ""Uvwie"",
+                ""Udu"",
+                ""Warri Central"",
+                ""Ukwani"",
+                ""Oshimili North"",
+                ""Patani""
+              ]
+            },
+            {
+              ""State"": ""Ebonyi"",
+              ""LGAs"": [
+                ""Edda"",
+                ""Afikpo"",
+                ""Onicha"",
+                ""Ohaozara"",
+                ""Abakaliki"",
+                ""Ishielu"",
+                ""lkwo"",
+                ""Ezza"",
+                ""Ezza South"",
+                ""Ohaukwu"",
+                ""Ebonyi"",
+                ""Ivo""
+              ]
+            },
+            {
+              ""State"": ""Enugu"",
+              ""LGAs"": [
+                ""Enugu South"",
+                ""Igbo-Eze South"",
+                ""Enugu North"",
+                ""Nkanu"",
+                ""Udi Agwu"",
+                ""Oji-River"",
+                ""Ezeagu"",
+                ""IgboEze North"",
+                ""Isi-Uzo"",
+                ""Nsukka"",
+                ""Igbo-Ekiti"",
+                ""Uzo-Uwani"",
+                ""Enugu Eas"",
+                ""Aninri"",
+                ""Nkanu East"",
+                ""Udenu""
+              ]
+            },
+            {
+              ""State"": ""Edo"",
+              ""LGAs"": [
+                ""Esan North-East"",
+                ""Esan Central"",
+                ""Esan West"",
+                ""Egor"",
+                ""Ukpoba"",
+                ""Central"",
+                ""Etsako Central"",
+                ""Igueben"",
+                ""Oredo"",
+                ""Ovia SouthWest"",
+                ""Ovia South-East"",
+                ""Orhionwon"",
+                ""Uhunmwonde"",
+                ""Etsako East"",
+                ""Esan South-East""
+              ]
+            },
+            {
+              ""State"": ""Ekiti"",
+              ""LGAs"": [
+                ""Ado"",
+                ""Ekiti-East"",
+                ""Ekiti-West"",
+                ""Emure/Ise/Orun"",
+                ""Ekiti South-West"",
+                ""Ikere"",
+                ""Irepodun"",
+                ""Ijero"",
+                ""Ido/Osi"",
+                ""Oye"",
+                ""Ikole"",
+                ""Moba"",
+                ""Gbonyin"",
+                ""Efon"",
+                ""Ise/Orun"",
+                ""Ilejemeje""
+              ]
+            },
+            {
+              ""State"": ""Enugu"",
+              ""LGAs"": [
+                ""Aninri"",
+                ""Enugu East"",
+                ""Ezeagu"",
+                ""Igbo Etiti"",
+                ""Igbo Eze North"",
+                ""Igbo Eze South"",
+                ""Isi Uzo"",
+                ""Nkanu East"",
+                ""Nkanu West"",
+                ""Nsukka"",
+                ""Oji River"",
+                ""Udenu"",
+                ""Udi""
+              ]
+            },
+            {
+              ""State"": ""Federal Capital Territory"",
+              ""LGAs"": [
+                ""Abaji"",
+                ""Abuja Municipal"",
+                ""Bwari"",
+                ""Gwagwalada"",
+                ""Kuje"",
+                ""Kwali""
+              ]
+            },
+            {
+              ""State"": ""Gombe"",
+              ""LGAs"": [
+                ""Akko"",
+                ""Balanga"",
+                ""Billiri"",
+                ""Dukku"",
+                ""Kaltungo"",
+                ""Kwami"",
+                ""Shomgom"",
+                ""Funakaye"",
+                ""Gombe"",
+                ""Nafada"",
+                ""Yamaltu/Deba""
+              ]
+            },
+            {
+              ""State"": ""Imo"",
+              ""LGAs"": [
+                ""Aboh-Mbaise"",
+                ""Ahiazu-Mbaise"",
+                ""Ehime-Mbano"",
+                ""Ezinihitte"",
+                ""Ideato North"",
+                ""Ideato South"",
+                ""Ihitte/Uboma"",
+                ""Ikeduru"",
+                ""Isiala Mbano"",
+                ""Isu"",
+                ""Mbaitoli"",
+                ""Ngor-Okpala"",
+                ""Njaba"",
+                ""Nkwerre"",
+                ""Obowo"",
+                ""Oguta"",
+                ""Ohaji/Egbema"",
+                ""Okigwe"",
+                ""Orlu"",
+                ""Orsu"",
+                ""Oru East"",
+                ""Oru West"",
+                ""Owerri Municipal"",
+                ""Owerri North"",
+                ""Owerri West""
+              ]
+            },
+            {
+              ""State"": ""Jigawa"",
+              ""LGAs"": [
+                ""Auyo"",
+                ""Babura"",
+                ""Biriniwa"",
+                ""Birnin Kudu"",
+                ""Buji"",
+                ""Dutse"",
+                ""Gagarawa"",
+                ""Garki"",
+                ""Gumel"",
+                ""Guri"",
+                ""Gwaram"",
+                ""Gwiwa"",
+                ""Hadejia"",
+                ""Jahun"",
+                ""Kafin Hausa"",
+                ""Kazaure"",
+                ""Kiri Kasama"",
+                ""Kiyawa"",
+                ""Maigatari"",
+                ""Malam Madori"",
+                ""Miga"",
+                ""Ringim"",
+                ""Roni"",
+                ""Sule-Tankarkar"",
+                ""Taura"",
+                ""Yankwashi""
+              ]
+            },
+            {
+              ""State"": ""Kano"",
+              ""LGAs"": [
+                ""Ajingi"",
+                ""Albasu"",
+                ""Bagwai"",
+                ""Bebeji"",
+                ""Bichi"",
+                ""Bunkure"",
+                ""Dala"",
+                ""Dambatta"",
+                ""Dawakin Kudu"",
+                ""Dawakin Tofa"",
+                ""Doguwa"",
+                ""Fagge"",
+                ""Gabasawa"",
+                ""Garko"",
+                ""Garun Mallam"",
+                ""Gaya"",
+                ""Gezawa"",
+                ""Gwale"",
+                ""Gwarzo"",
+                ""Kabo"",
+                ""Kano"",
+                ""Karaye"",
+                ""Kibiya"",
+                ""Kiru"",
+                ""Kumbotso"",
+                ""Kunchi"",
+                ""Kura"",
+                ""Madobi"",
+                ""Makoda"",
+                ""Minjibir"",
+                ""Nasarawa"",
+                ""Rano"",
+                ""Rimin Gado"",
+                ""Rogo"",
+                ""Shanono"",
+                ""Sumaila"",
+                ""Takai"",
+                ""Tarauni"",
+                ""Tofa"",
+                ""Tsanyawa"",
+                ""Tudun Wada"",
+                ""Ungogo"",
+                ""Warawa"",
+                ""Wudil""
+              ]
+            },
+            {
+              ""State"": ""Kogi"",
+              ""LGAs"": [
+                ""Adavi"",
+                ""Ajaokuta"",
+                ""Ankpa"",
+                ""Bassa"",
+                ""Dekina"",
+                ""Ibaji"",
+                ""Idah"",
+                ""Igalamela-Odolu"",
+                ""Ijumu"",
+                ""Kabba/Bunu"",
+                ""Kogi"",
+                ""Lokoja"",
+                ""Mopa-Muro"",
+                ""Ofu"",
+                ""Ogori/Magongo"",
+                ""Okehi"",
+                ""Okene"",
+                ""Olamaboro"",
+                ""Omala"",
+                ""Yagba East"",
+                ""Yagba West""
+              ]
+            },
+            {
+              ""State"": ""Kwara"",
+              ""LGAs"": [
+                ""Asa"",
+                ""Baruten"",
+                ""Edu"",
+                ""Ekiti"",
+                ""Ifelodun"",
+                ""Ilorin East"",
+                ""Ilorin West"",
+                ""Irepodun"",
+                ""Isin"",
+                ""Kaiama"",
+                ""Moro"",
+                ""Offa"",
+                ""Oke-Ero"",
+                ""Oyun"",
+                ""Pategi""
+              ]
+            },
+            {
+              ""State"": ""Lagos"",
+              ""LGAs"": [
+                ""Agege"",
+                ""Ajeromi-Ifelodun"",
+                ""Alimosho"",
+                ""Amuwo-Odofin"",
+                ""Apapa"",
+                ""Badagry"",
+                ""Epe"",
+                ""Eti-Osa"",
+                ""Ibeju-Lekki"",
+                ""Ifako-Ijaiye"",
+                ""Ikeja"",
+                ""Ikorodu"",
+                ""Kosofe"",
+                ""Lagos Island"",
+                ""Lagos Mainland"",
+                ""Mushin"",
+                ""Ojo"",
+                ""Oshodi-Isolo"",
+                ""Shomolu"",
+                ""Surulere""
+              ]
+            },
+            {
+              ""State"": ""Nasarawa"",
+              ""LGAs"": [
+                ""Akwanga"",
+                ""Awe"",
+                ""Doma"",
+                ""Karu"",
+                ""Keana"",
+                ""Keffi"",
+                ""Lafia"",
+                ""Nasarawa"",
+                ""Nasarawa Egon"",
+                ""Obi"",
+                ""Toto"",
+                ""Wamba""
+              ]
+            },
+            {
+              ""State"": ""Niger"",
+              ""LGAs"": [
+                ""Agaie"",
+                ""Agwara"",
+                ""Bida"",
+                ""Borgu"",
+                ""Bosso"",
+                ""Chanchaga"",
+                ""Edati"",
+                ""Gbako"",
+                ""Gurara"",
+                ""Katcha"",
+                ""Kontagora"",
+                ""Lapai"",
+                ""Lavun"",
+                ""Magama"",
+                ""Mariga"",
+                ""Mashegu"",
+                ""Mokwa"",
+                ""Munya"",
+                ""Paikoro"",
+                ""Rafi"",
+                ""Rijau"",
+                ""Shiroro"",
+                ""Suleja"",
+                ""Tafa"",
+                ""Wushishi""
+              ]
+            },
+            {
+              ""State"": ""Ogun"",
+              ""LGAs"": [
+                ""Abeokuta North"",
+                ""Abeokuta South"",
+                ""Ado-Odo/Ota"",
+                ""Ewekoro"",
+                ""Ifo"",
+                ""Ijebu East"",
+                ""Ijebu North"",
+                ""Ijebu North East"",
+                ""Ijebu Ode"",
+                ""Ikenne"",
+                ""Imeko Afon"",
+                ""Ipokia"",
+                ""Obafemi Owode"",
+                ""Odogbolu"",
+                ""Odeda"",
+                ""Ogun Waterside"",
+                ""Remo North"",
+                ""Shagamu""
+              ]
+            },
+            {
+              ""State"": ""Ondo"",
+              ""LGAs"": [
+                ""Akoko North-East"",
+                ""Akoko North-West"",
+                ""Akoko South-West"",
+                ""Akoko South-East"",
+                ""Akure North"",
+                ""Akure South"",
+                ""Ese Odo"",
+                ""Idanre"",
+                ""Ifedore"",
+                ""Ilaje"",
+                ""Ile Oluji/Okeigbo"",
+                ""Irele"",
+                ""Odigbo"",
+                ""Okitipupa"",
+                ""Ondo East"",
+                ""Ondo West"",
+                ""Ose"",
+                ""Owo""
+              ]
+            },
+            {
+              ""State"": ""Osun"",
+              ""LGAs"": [
+                ""Aiyedaade"",
+                ""Aiyedire"",
+                ""Atakunmosa East"",
+                ""Atakunmosa West"",
+                ""Boluwaduro"",
+                ""Boripe"",
+                ""Ede North"",
+                ""Ede South"",
+                ""Egbedore"",
+                ""Ejigbo"",
+                ""Ife Central"",
+                ""Ife East"",
+                ""Ife North"",
+                ""Ife South"",
+                ""Ifedayo"",
+                ""Ifelodun"",
+                ""Ila"",
+                ""Ilesha East"",
+                ""Ilesha West"",
+                ""Irepodun"",
+                ""Irewole"",
+                ""Isokan"",
+                ""Iwo"",
+                ""Obokun"",
+                ""Odo-Otin"",
+                ""Ola Oluwa"",
+                ""Olorunda"",
+                ""Oriade"",
+                ""Orolu"",
+                ""Osogbo""
+              ]
+            },
+            {
+              ""State"": ""Oyo"",
+              ""LGAs"": [
+                ""Afijio"",
+                ""Akinyele"",
+                ""Atiba"",
+                ""Atisbo"",
+                ""Egbeda"",
+                ""Ibadan North"",
+                ""Ibadan North-East"",
+                ""Ibadan North-West"",
+                ""Ibadan South-East"",
+                ""Ibadan South-West"",
+                ""Ibarapa Central"",
+                ""Ibarapa East"",
+                ""Ibarapa North"",
+                ""Ido"",
+                ""Irepo"",
+                ""Iseyin"",
+                ""Itesiwaju"",
+                ""Iwajowa"",
+                ""Kajola"",
+                ""Lagelu"",
+                ""Ogbomosho North"",
+                ""Ogbomosho South"",
+                ""Ogo Oluwa"",
+                ""Olorunsogo"",
+                ""Oluyole"",
+                ""Ona Ara"",
+                ""Orelope"",
+                ""Ori Ire"",
+                ""Oyo"",
+                ""Oyo East"",
+                ""Saki East"",
+                ""Saki West"",
+                ""Surulere""
+              ]
+            },
+            {
+              ""State"": ""Plateau"",
+              ""LGAs"": [
+                ""Barkin Ladi"",
+                ""Bassa"",
+                ""Bokkos"",
+                ""Jos East"",
+                ""Jos North"",
+                ""Jos South"",
+                ""Kanam"",
+                ""Kanke"",
+                ""Langtang North"",
+                ""Langtang South"",
+                ""Mangu"",
+                ""Mikang"",
+                ""Pankshin"",
+                ""Qua'an Pan"",
+                ""Riyom"",
+                ""Shendam"",
+                ""Wase""
+              ]
+            },
+            {
+              ""State"": ""Rivers"",
+              ""LGAs"": [
+                ""Abua/Odual"",
+                ""Ahoada East"",
+                ""Ahoada West"",
+                ""Akuku Toru"",
+                ""Andoni"",
+                ""Asari-Toru"",
+                ""Bonny"",
+                ""Degema"",
+                ""Eleme"",
+                ""Emuoha"",
+                ""Etche"",
+                ""Gokana"",
+                ""Ikwerre"",
+                ""Khana"",
+                ""Obio/Akpor"",
+                ""Ogba/Egbema/Ndoni"",
+                ""Ogu/Bolo"",
+                ""Okrika"",
+                ""Omuma"",
+                ""Opobo/Nkoro"",
+                ""Oyigbo"",
+                ""Port Harcourt"",
+                ""Tai""
+              ]
+            },
+            {
+              ""State"": ""Sokoto"",
+              ""LGAs"": [
+                ""Binji"",
+                ""Bodinga"",
+                ""Dange Shuni"",
+                ""Gada"",
+                ""Goronyo"",
+                ""Gudu"",
+                ""Gwadabawa"",
+                ""Illela"",
+                ""Isa"",
+                ""Kebbe"",
+                ""Kware"",
+                ""Rabah"",
+                ""Sabon Birni"",
+                ""Shagari"",
+                ""Silame"",
+                ""Sokoto North"",
+                ""Sokoto South"",
+                ""Tambuwal"",
+                ""Tangaza"",
+                ""Tureta"",
+                ""Wamako"",
+                ""Wurno"",
+                ""Yabo""
+              ]
+            },
+            {
+              ""State"": ""Taraba"",
+              ""LGAs"": [
+                ""Ardo Kola"",
+                ""Bali"",
+                ""Donga"",
+                ""Gashaka"",
+                ""Gassol"",
+                ""Ibi"",
+                ""Jalingo"",
+                ""Karim Lamido"",
+                ""Kumi"",
+                ""Lau"",
+                ""Sardauna"",
+                ""Takum"",
+                ""Ussa"",
+                ""Wukari"",
+                ""Yorro"",
+                ""Zing""
+              ]
+            },
+            {
+              ""State"": ""Yobe"",
+              ""LGAs"": [
+                ""Bade"",
+                ""Bursari"",
+                ""Damaturu"",
+                ""Fika"",
+                ""Fune"",
+                ""Geidam"",
+                ""Gujba"",
+                ""Gulani"",
+                ""Jakusko"",
+                ""Karasuwa"",
+                ""Machina"",
+                ""Nangere"",
+                ""Nguru"",
+                ""Potiskum"",
+                ""Tarmuwa"",
+                ""Yunusari"",
+                ""Yusufari""
+              ]
+            },
+            {
+              ""State"": ""Zamfara"",
+              ""LGAs"": [
+                ""Anka"",
+                ""Bakura"",
+                ""Birnin Magaji/Kiyaw"",
+                ""Bukkuyum"",
+                ""Bungudu"",
+                ""Gummi"",
+                ""Gusau"",
+                ""Kaura Namoda"",
+                ""Maradun"",
+                ""Maru"",
+                ""Shinkafi"",
+                ""Talata Mafara"",
+                ""Chafe"",
+                ""Zurmi""
+              ]
+            }
+          ]
+        }";
+            bool response= false;
+            StateRoot stateRoot =await  GenericService.Deserialize<StateRoot>(json);
+            // Perform the check
+            if (stateRoot != null)
+            {
+                var stateData = stateRoot.States.FirstOrDefault(s => s.State.Equals(state, StringComparison.OrdinalIgnoreCase));
+                if (stateData != null)
                 {
-                    return true;
-                }
-                else
-                {
-                    return false;
+                    return stateData.LGAs.Contains(LGA, StringComparer.OrdinalIgnoreCase);
                 }
             }
-            else
-            {
-                return false;
-            }
+
+            return response;
         }
+
     }
 }

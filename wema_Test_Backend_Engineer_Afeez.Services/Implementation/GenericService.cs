@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace wema_Test_Backend_Engineer_Afeez.Services.Implementation
 {
@@ -24,7 +25,7 @@ namespace wema_Test_Backend_Engineer_Afeez.Services.Implementation
                 return null;
             }
         }
-        public static T Deserialize<T>(string jsonString)
+        public async static Task< T> Deserialize<T>(string jsonString)
         {
             try
             {
@@ -82,25 +83,32 @@ namespace wema_Test_Backend_Engineer_Afeez.Services.Implementation
 
             return false;
         }
-        public static async Task<string> SendRequestAsync(string url, HttpMethod method, string content = null)
+        public static async Task<string> SendGetRequestAsync(string url)
         {
-            var request = new HttpRequestMessage(method, url);
-
-            if (method != HttpMethod.Get && !string.IsNullOrEmpty(content))
+            try
             {
-                request.Content = new StringContent(content, System.Text.Encoding.UTF8, "application/json");
+                var client = new HttpClient();
+                var response = await client.GetAsync(url);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadAsStringAsync();
+                }
+                else
+                {
+                    return null;
+                }
             }
-
-            var response = await new HttpClient().SendAsync(request);
-
-            if (response.IsSuccessStatusCode)
+            catch (HttpRequestException ex)
             {
-                return await response.Content.ReadAsStringAsync();
+                return null;
             }
-            else
+            catch (Exception ex)
             {
-                return $"Request failed with status code {response.StatusCode}";
+                return null;
             }
         }
+
+
     }
 }
